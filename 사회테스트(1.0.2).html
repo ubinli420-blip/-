@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>퀴즈</title>
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #2a4ea2;
+    color: #fff;
+  }
+  .container {
+    max-width: 600px;
+    margin: auto;
+    padding: 20px;
+  }
+  h1 {
+    text-align: center;
+  }
+  select, button {
+    padding: 10px;
+    margin: 10px 5px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: none;
+  }
+  button {
+    cursor: pointer;
+  }
+  .quiz-item {
+    background: rgba(255,255,255,0.1);
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 10px;
+  }
+  .quiz-text {
+    margin-bottom: 8px;
+    line-height: 1.4em;
+    white-space: normal; /* 줄바꿈 허용 */
+  }
+  input {
+    width: 100%;
+    padding: 8px;
+    border-radius: 5px;
+    border: none;
+    margin-bottom: 5px;
+  }
+  .result {
+    margin-top: 5px;
+    font-weight: bold;
+  }
+  .wrong {
+    color: #ff4d4d;
+  }
+  .correct {
+    color: #90ee90;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>퀴즈</h1>
+  <div>
+    <label for="numQuestions">문제 수 선택:</label>
+    <select id="numQuestions">
+      <option value="10">10문제</option>
+      <option value="20">20문제</option>
+      <option value="40">40문제</option>
+    </select>
+    <button id="startBtn">시작</button>
+  </div>
+  <div id="quizContainer"></div>
+</div>
+
+<script>
+const quizData = [
+  {"text":"세계화는 지역 간의 상호 의존성이 높아지고 국가의 경계를 넘어 ___가 하나로 통합되는 현상을 의미한다. 또한 ___는 세계화의 흐름 속에서 특정 지역이 고유한 특성을 바탕으로 세계 차원에서 가치를 갖는 현상을 의미한다.","answers":["지역화","세계"]},
+  {"text":"___로 지역 간 교류와 협력이 강화되면서 뉴욕, 런던과 같이 경제, 정치, 문화 등 다양한 측면에서 전 세계의 중심지 역할을 하는 ___가 성장하였다. 또한 ___이 이곳에 밀집하게 되는데, 이는 상품이나 서비스의 생산과 유통 과정에 필요한 서비스를 의미한다.","answers":["세계화","세계도시","생산자서비스",]},
+  {"text":"세계화로 ___이 활발해지면서 국경을 넘어 세계적인 규모로 생산 및 유통, 판매 활동을 하는 ___이 등장하였다.","answers":["무역","다국적기업"]},
+  {"text":"___은 기업의 규모가 커지면서 각 기능이 공간적으로 분리되는 현상을 의미한다. 예를 들어 경영 및 관리 기능을 하는 ___는 본국의 대도시에 있다.","answers":["공간적분업","본사"]},
+  {"text":"세계화로 인한 ___ 심화 문제는 자본 및 기술력이 풍부한 ___과 기업은 경쟁에서 우위를 차지하였지만, 그렇지 못한 ___과 기업은 경쟁에서 밀려 발생하는 문제이다.","answers":["빈부격차","선진국","개발 도상국"]},
+  {"text":"세계화 시대에 나타나는 다양한 문제에 관해 ___의 구성원으로서 ___을 가지고 문제 해결에 적극적으로 동참해야 한다. 또한 국가 간 빈부 격차를 줄이기 위해서는 선진국과 ___들이 정의로운 분배 의식을 바탕으로 기술 이전과 경제 원조 등의 지원을 해야 한다.","answers":["지구촌","세계시민의식","국제기구"]},
+  {"text":"___는 범죄, 테러, 전쟁 등과 같은 직접적, 물리적 폭력이 없는 상태를 의미한다. 반면 ___는 직접적, 물리적 폭력뿐만 아니라 구조적 폭력과 언어와 예술 등에서의 ___까지 제거된 상태를 의미한다.","answers":["소극적평화","적극적평화","문화적폭력"]},
+  {"text":"주민 대부분 ___를 믿는 ___지역이 ___를 믿는 사람이 많은 ___에 편입되면서 발생한 분쟁은 ___이다.","answers":["이슬람교","카슈미르","힌두교","인도","카슈미르분리분쟁"]},
+  {"text":"___은 주변에 ___가 매장되어 있는 포클랜드 제도의 소유권을 둘러싸고 ___과 ___ 간에 발생한 분쟁이다.","answers":["포클랜드분쟁","석유","영국","아르헨티나"]},
+  {"text":"20세기 초, 남극 대륙을 놓고 영유권 분쟁이 심각해지자, 12개국이 협력하여 ___을 체결하였다. 이 조약에 따라 남극 대륙은 어떤 국가도 영유권을 주장할 수 없고, ___나 교류의 목적으로만 이용할 수 있게 되었다.","answers":["남극조약","과학연구"]},
+  {"text":"국가는 일정한 ___와 국민을 바탕으로 주권을 가진 국제 사회의 가장 기본적인 ___로 국제 사회에서 ___를 갖고 공식적인 활동을 할 수 있는 자격이 있다.","answers":["영토","행위주체","법적지위"]},
+  {"text":"___는 각국의 정부를 회원으로 하는 국제 사회의 행위 주체를 의미하며, 국제 연합 등이 있다. 반면 ___는 개인이나 민간단체의 주도로 만들어진 국제 사회의 행위 주체로, 그린피스 등이 있다.","answers":["국제기구","비정부기구"]},
+  {"text":"___는 인도주의적 의료 서비스를 제공해 온 공로를 인정받아 1999년에 노벨 평화상을 수상하였다. 한편 ___는 기아 퇴치, 식량 문제 해결을 위해 노력한 공로로 2020년에 노벨 평화상을 수상하였다.","answers":["국경없는의사회","국제연합세계식량계획"]},
+  {"text":"냉전 시대에 국제사회는 ___ 진영을 대표하는 미국과 ___ 진영을 대표하는 소련 간의 냉전 질서로 재편되었다. 이러한 배경 속에서 ___에서 결정된 한반도의 ___를 둘러싸고 좌익과 우익 세력의 찬반 논쟁과 이념 갈등이 깊어졌다.","answers":["자유주의","공산주의","모스크바3국외상회의","신탁통치"]},
+  {"text":"우리나라는 ___년 8월 15일 일본의 식민 지배에서 벗어나 광복을 맞이하였다. 하지만 광복과 동시에 미국과 소련이 ___을 경계로 ___를 분할 점령하면서 남북분단이 시작되었다.","answers":["1945","북위38도선","한반도"]},
+  {"text":"평화통일은 인도주의 차원에서 북한 주민의 삶을 개선하고 이산가족의 아픔을 해소할 수 있다. 군사 대립으로 소모되는 비용을 줄여 경제 발전을 이룰 수 있으며, ___과 ___를 연결하여 한반도가 ___로 성장할 수 있다.","answers":["태평양","유라시아","물류중심지"]},
+  {"text":"동아시아와 여러 주변 국가들은 복잡하게 얽힌 역사적 배경과 ___을 둘러싼 경쟁 등을 이유로 영토 분쟁을 겪고 있다. 제2차 세계 대전 이후 동아시아에서는 수많은 작은 ___의 ___ 문제를 둘러싸고 영토 분쟁이 일어났다.","answers":["해양자원","섬","영유권"]},
+  {"text":"2002년부터 한국과 일본은 두 차례에 걸쳐 공동 역사 연구를 하였으며, 이후 중국과 일본 간에도 공동 역사 연구가 이루어졌다. 각국의 학자, 교사, 시민도 ___를 만들어 ___에 대응하고 갈등을 극복하여 동아시아의 공존을 모색하였다.","answers":["공동역사교재","역사왜곡"]},
+  {"text":"6.25 전쟁 당시 경제 원조를 받는 국가였던 우리나라는 고도의 경제 성장을 이룩하여 다른 국가에 원조하는 ___의 회원국이 되었다. 또한 ___에 기술을 지원하고, 분쟁 지역에 군대를 파견하여 ___의 평화 유지 활동에 도움을 주고 있다.","answers":["개발원조위원회","개발도상국","국제연합"]},
+  {"text":"___은 정부 차원의 대외 무상 협력 사업을 전담하여 실시하는 우리나라 ___산하 기관이다. 또한 공적 개발 원조란 ___를 포함한 공공 기관이 ___의 경제 개발과 복지 향상을 목적으로 제공하는 원조를 의미한다.","answers":["한국국제협력단","외교부","정부","개발도상국"]},
+  {"text":"___는 지구상에 불균등하게 분포한다. 일반적으로 기후, 지형, 식생과 같은 ___과 산업, 교통, 교육 등 ___이 유리하여 생활하는 데 편리한 지역에 많은 사람이 모여 산다.","answers":["인구","자연적조건","사회경제적조건"]},
+  {"text":"세계 인구의 90% 이상은 ___에 거주한다. 특히 ___의 냉대, 온대 기후 지역과 평균 해발 고도가 낮은 ___나 해안 지역에 인구가 밀집한다.","answers":["북반구","중위도","평야"]},
+  {"text":"___는 나이, 성별 등에 따라 인구 집단을 분류한 결과로, 국가 및 지역의 사회적 특성에 따라 다양하게 나타난다. ___의 경우 상대적으로 의료 기술 수준과 생활 수준이 높아 기대 수명과 ___이 높다. 그래서 ___가 늘어나고 있다.","answers":["인구구조","선진국","중위연령","노년인구부양비"]},
+  {"text":"___은 경제 발전 과정에서 나타나는 특정 인구 집단의 인구 성장 및 정체 과정을 보여준다. 이는 1단계부터 5단계로 나뉘는데, 최근 일부 ___에서는 출생률이 ___보다 낮아 인구가 ___하는 5단계가 나타나고 있다.","answers":["인구변천모형","선진국","사망률","감소"]},
+  {"text":"전 지구적 범위의 인구 이동은 대부분 노동자가 좋은 일자리를 찾아 ___에서 ___으로 이동하는 ___이다. 정치적으로 불안하고 분쟁이 발생하는 국가에서는 ___이 나타나는데, 아프리카와 서남아시아의 난민 이동이 대표적이다. 이 밖에도 환경 문제와 자연 재해로 환경 난민이 발생하기도 한다.","answers":["개발도상국","선진국","경제적이동","정치적이동"]},
+  {"text":"인구 이동에 따라 ___에서는 다양한 문화가 공존하고 ___이 풍부해지지만, ___과 이주민 간의 갈등이 나타나기도 한다. 반면 ___은 이주 노동자의 송금으로 ___가 늘어나지만, 젊은 인력이 빠져나가 장기적으로 경제가 침체될 수 있다.","answers":["인구유입지역","노동력","원주민","인구유출지역","외화"]},
+  {"text":"___은 경제 발전 속도보다 ___속도가 더 빨라 인구 부양력을 초과한 현상을 의미한다. 이러한 현상으로 발생한 문제들을 해결하기 위해 개발 도상국은 인구 부양력을 높이는 동시에 ___을 펴고 있다.","answers":["인구과잉현상","인구증가","출산억제정책"]},
+  {"text":"___은 ___에서 얻을 수 있는 것 중에서 인간에게 유용하면서 기술적, 경제적으로 이용 가능한 것을 의미한다. 그 중에서 ___은 인간의 경제 활동에 필요한 에너지를 생산할 수 있는 자원으로, 석탄과 석유와 같은 ___와 수력과 풍력과 같은 ___가 있다.","answers":["자원","자연","에너지자원","화석에너지","신재생에너지"]},
+  {"text":"우리나라는 저출생에 따른 문제를 해결하기 위해 각종 ___을 시행하고 있다. 또한 정부는 노인들의 건강하고 안정적인 노후 생활을 보장하기 위해 기초 연금을 비롯한 ___를 통해 ___에 대비하고 있다.","answers":["출산장려정책","노인복지제도","고령화"]},
+  {"text":"우리나라는 1970~1980년대를 거치면서 출생률이 급격하게 낮아지고 ___는 급증했다. 이후에도 저출생, 고령화 현상이 심화하자 우리나라는 2018년에 ___로 진입하였다. 이러한 상황이 계속되면 ___가 줄어들어 여러 문제가 나타나며, ___이 나타날 수 있다.","answers":["노인인구","고령사회","경제활동인구","세대갈등"]},
+  {"text":"석탄은 ___ 이후 ___의 연료로 사용되어 화석에너지 중 사용한 역사가 가장 길다. 또한 ___는 세계에서 가장 소비량이 많은 에너지 자원이며, 천연가스는 석탄과 석유에 비해 연소 시 ___을 적게 배출한다.","answers":["산업혁명","증기기관","오염물질"]},
+  {"text":"___는 ___를 변환하거나 화학 반응을 일으켜 전기나 열을 만들어 내는 것으로, 수소 에너지, 연료 전지 에너지 등이 있다. ___는 자연적으로 ___되는 요소를 에너지로 변환한 것으로, 수력, 풍력 에너지 등이 있다.","answers":["신에너지","화석에너지","재생에너지","재생"]},
+  {"text":"___는 특정 지역에 집중적으로 편재하여 분포하므로 ___과 ___ 일치하지 않는 경우가 많다. 특히 석유는 전 세계 매장량의 절반이 ___에 분포하는데, 국제 이동이 활발하다. 반면 ___는 비교적 여러 지역에 고루 매장되어 있어 석유보다 국제 이동량이 적다.","answers":["화석에너지","생산 지역","소비 지역","서남아시아","석탄"]},
+  {"text":"자원 보유국이 ___를 주장하며 자원의 가격을 올리거나 ___에 제한을 두어, ___의 해외 의존도가 높은 국가들이 어려움에 처하거나 국가 간 분쟁이 발생하기도 한다.","answers":["자원민족주의","수출","에너지자원"]},
+  {"text":"국제연합 ___은 온실가스 배출을 제한하기 위해 채택한 국제 협약이며, 이후 ___에서 선진국의 감축 목표치를 규정하였다. 반면 ___에서는 ___에 감축 의무가 주어졌다.","answers":["기후변화협약","교토의정서","파리협정","모든국가"]},
+  {"text":"___은 ___을 위해 정부, 기업, 시민사회 모두가 2030년까지 공동으로 추진해 나가야 할 목표를 제시했다. 이 목표는 ___개로 이루어져 있고 환경, 경제, 사회 측면을 통합적으로 고려했으며, 서로 긴밀히 연결되어 있다.","answers":["국제연합","지속가능한발전","17"]},
+  {"text":"___는 정부가 ___를 배출하는 기업을 대상으로 연 단위로 배출할 수 있는 양을 정해 주고, 배출량을 평가하여 남거나 부족한 배출량에 대해 기업 간 ___를 허용하는 제도이다.","answers":["온실가스배출권거래제","온실가스","거래"]},
+  {"text":"국가는 각종 법률과 제도를 통해 ___을 추구한다. 개인은 ___ 구성원으로서 환경 보호, 인권, 평등 등의 가치를 추구하며 ___를 실천하고 사회 취약 계층을 지원하는 등 ___적 생활 방식을 실천할 수 있다.","answers":["지속가능한발전","지구촌","윤리적소비","친환경"]},
+  {"text":"과학기술이 빠른 속도로 발전하면서 미래에는 우리의 ___ 범위가 더욱 넓어지고 생활도 편리해질 것이다. 또한 ___의 발달은 모든 사물이 인간과 연결된 ___를 열어 인간 삶이 더욱 편리해질 것으로 예측된다.","answers":["생활공간","지능정보기술","초연결사회"]},
+  {"text":"오늘날에는 지구 전체를 ___처럼 여겨 지구촌이라는 말을 많이 사용하고 있다. 따라서 우리는 스스로를 지역, 국가, 지구촌과 연결된 ___으로 인식하여 ___의식을 지니고 살아가야 한다.","answers":["한마을","세계시민","세계시민의식"]}
+];
+
+// 설명 박스 생성
+const container = document.querySelector('.container');
+const helpBtn = document.createElement('button');
+helpBtn.textContent = '?';
+helpBtn.style.marginLeft = '5px';
+container.querySelector('div').appendChild(helpBtn);
+
+const helpBox = document.createElement('div');
+helpBox.style.display = 'none';
+helpBox.style.position = 'absolute';
+helpBox.style.top = '80px';
+helpBox.style.left = '50%';
+helpBox.style.transform = 'translateX(-50%)';
+helpBox.style.width = '330px';
+helpBox.style.padding = '15px';
+helpBox.style.backgroundColor = 'white';
+helpBox.style.color = 'black';
+helpBox.style.borderRadius = '8px';
+helpBox.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+helpBox.style.zIndex = 1000;
+helpBox.innerText = "문제 수를 고르고 시작을 누르시면 실행 됩니다. 시작 누를 때 마다 초기화가 되니 주의 하시구요. 정답은 정답1,정답2 이렇게 쉼표를 쓰시면 됩니다. 띄어쓰기까지 해야 정답 처리가 되니 주의 해주세요. 그리고 정답 입력 중에 다른 곳을 클릭 시 입력이 초기화 되고 정답 혹은 오답 처리가 나오니 주의해주세요. 버그 발견 시 개인적으로 연락 주시면 피드백 반영 하겠습니다";
+document.body.appendChild(helpBox);
+
+helpBtn.addEventListener('click', (e)=>{
+  e.stopPropagation();
+  helpBox.style.display = helpBox.style.display==='block' ? 'none' : 'block';
+});
+
+document.addEventListener('click', (e)=>{
+  if(!helpBox.contains(e.target) && e.target !== helpBtn){
+    helpBox.style.display = 'none';
+  }
+});
+
+// 문제 섞기 함수
+function shuffleArray(array){
+  for(let i=array.length-1; i>0; i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+// 퀴즈 시작
+function startQuiz(){
+  const containerDiv = document.getElementById("quizContainer");
+  containerDiv.innerHTML = "";
+  let num = parseInt(document.getElementById("numQuestions").value);
+  const quizCopy = [...quizData];
+  shuffleArray(quizCopy);
+  const selectedQuiz = quizCopy.slice(0,num);
+
+  selectedQuiz.forEach((item,index)=>{
+    const quizItem = document.createElement("div");
+    quizItem.classList.add("quiz-item");
+    quizItem.innerHTML = `
+      <div class="quiz-text">${item.text}</div>
+      <input type="text" id="input${index}" placeholder="정답을 입력하세요">
+      <div class="result" id="result${index}"></div>
+    `;
+    containerDiv.appendChild(quizItem);
+
+    const input = quizItem.querySelector("input");
+    input.addEventListener("change", ()=>{
+      let correct = true;
+      let resultText = "";
+      item.answers.forEach((ans)=>{
+        if(!input.value.includes(ans)){
+          correct = false;
+          resultText += ans + " ";
+        }
+      });
+      const resultDiv = document.getElementById(`result${index}`);
+      if(correct){
+        resultDiv.textContent = "정답!";
+        resultDiv.className = "result correct";
+      } else {
+        resultDiv.textContent = `오답: ${resultText.trim()}`;
+        resultDiv.className = "result wrong";
+      }
+    });
+  });
+}
+
+const startBtn = document.getElementById("startBtn");
+startBtn.addEventListener("click", startQuiz);
+startBtn.addEventListener("touchstart", (e) => {
+  e.preventDefault(); // iOS 터치 확대 방지
+  startQuiz();
+});
+</script>
+</body>
+</html>
